@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="style/style.css">
+
+    <style type="text/css" media="print">
+        .noprint {
+            display: none
+        }
+        
+        .print {
+            display: block !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <header class="el-header noprint">
+            <div class="icon-btns">
+                <i class="icon-list" @click="changeLeftMenu"></i>
+                <i class="icon-skip_previous" v-bind:class="{'disabled': currentPage == 1}" @click="changeCurrentPage('first')"></i>
+                <i class="icon-play_arrow prev-icon" v-bind:class="{'disabled': currentPage == 1}" @click="changeCurrentPage('prev')"></i>
+                <i class="icon-play_arrow" v-bind:class="{'disabled': currentPage == pageNum}" @click="changeCurrentPage('next')"></i>
+                <i class="icon-skip_next" v-bind:class="{'disabled': currentPage == pageNum}" @click="changeCurrentPage('last')"></i>
+                <select v-model="currentPage">
+                    <option v-for="page in pageNum" v-bind:value="page">page {{ page }}</option>
+                </select>
+                <i class="icon-zoom_in" v-bind:class="{'disabled': zoomNum == 2}" @click="modifyZoom('in')"></i>
+                <select v-model="zoomNum">
+                    <option value="0.5">50%</option>
+                    <option value="0.6">60%</option>
+                    <option value="0.7">70%</option>
+                    <option value="0.8">80%</option>
+                    <option value="0.9">90%</option>
+                    <option value="1.0" selected>100%</option>
+                    <option value="1.1">110%</option>
+                    <option value="1.2">120%</option>
+                    <option value="1.3">130%</option>
+                    <option value="1.4">140%</option>
+                    <option value="1.5">150%</option>
+                    <option value="1.6">160%</option>
+                    <option value="1.7">170%</option>
+                    <option value="1.8">180%</option>
+                    <option value="1.9">190%</option>
+                    <option value="2.0">200%</option>
+                </select>
+                <i class="icon-zoom_out" v-bind:class="{'disabled': zoomNum == 0.5}" @click="modifyZoom('out')"></i>
+                <i class="icon-format_align_left" @click="textAlign = 'left'"></i>
+                <i class="icon-format_align_center" @click="textAlign = 'center'"></i>
+                <i class="icon-format_align_right" @click="textAlign = 'right'"></i>
+                <i class="icon-print" @click="window.print()"></i>
+            </div>
+        </header>
+
+        <aside class="noprint" width="240px" v-show="ifMenuShow">
+            <nav class="tabNav">
+                <ul>
+                    <li v-bind:class="{ 'curr': currentNav == 0 }" @click="currentNav = 0">Page</li>
+                    <li v-bind:class="{ 'curr': currentNav == 1 }" @click="currentNav = 1">Bookmark</li>
+                </ul>
+
+                <div class="clear"></div>
+            </nav>
+
+            <div class="tab-conent scrollbar" v-bind:style="{ height: asideHeight + 'px' }">
+
+            <section v-show="currentNav == 0">
+                <ul class="page-menu">
+                    <li v-for="page in pageNum" v-bind:class="{ 'curr': currentPage == page }" @click="changePage(page)"><i class="icon-file-text2"></i> page {{ page }}</li>
+                </ul>
+            </section>
+
+            <section v-show="currentNav == 1">
+                <ul class="page-menu">
+                    <li v-for="page in pageNum" v-bind:class="{ 'curr': currentPage == page }" @click="changePage(page)"><i class="icon-turned_in_not"></i> Bookmark {{ page }}</li>
+                </ul>
+            </section>
+        </div>
+
+        </aside>
+        <div class="main scrollbar noprint"  v-bind:style="{ height: mainHeight + 'px' }" v-bind:class="{ 'mainLeftM': ifMenuShow, 'aleft': textAlign === 'left','acenter': textAlign === 'center','aright': textAlign === 'right'}">
+            <div class="conent" v-html="pageContent" v-bind:style="zoomStyle"></div>
+
+            <div class="clear"></div>
+        </div>
+
+        <!--专门只为打印的内容-->
+        <div class="conent print" style="display:none" v-html="pageContent"></div>
+    </div>
+</body>
+<!-- 先引入 Vue -->
+<script src="js/vue.min.js"></script>
+<script>
+
+var app = new Vue({
+        el: '#app',
+        data: function() {
+            return {
+                // visible: false,
+                isCollapse: false,
+                currentNav: 0,
+                activeName2: 'first',
+                pageNum: 1, 
+                currentPage: 1,
+                pageContent: '',
+                asideHeight: 300,
+                mainHeight: 300,
+                ifMenuShow: true,
+                zoomNum: '1.0',
+                textAlign: 'left',
+                zoomStyle: {},
+                pageDatas: ['<p><span style="font-family:Arial;font-size:24.787100px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:44.552082px;left:193.498245px"><nobr>VENKAT AMITH WOONNA </nobr></span></span></p><p><span style="font-family:Arial;font-size:11.955200px;font-style:normal;font-weight:normal;color:#003399;"><span style="position:absolute;top:84.762535px;left:85.315094px"><nobr><a href="https://github.com/homealone07" target="_blank">homealone07 </a>| </nobr></span></span></p><p><span style="font-family:Arial;font-size:11.955200px;font-style:normal;font-weight:normal;color:#003399;"><span style="position:absolute;top:84.762535px;left:217.220596px"><nobr><a href="https://www.linkedin.com/in/venkat-amith-woonna-38bb721b8" target="_blank">Venkat </a><a href="https://www.linkedin.com/in/venkat-amith-woonna-38bb721b8" target="_blank">Amith </a>| </nobr></span></span></p><p><span style="font-family:Arial;font-size:11.955200px;font-style:normal;font-weight:normal;color:#003399;"><span style="position:absolute;top:84.762535px;left:359.774475px"><nobr><a href="mailto:venkatamithwoonna@gmail.com">venkatamithwoonna@gmail.com </a>| </nobr></span></span></p><p><span style="font-family:Arial;font-size:11.955200px;font-style:normal;font-weight:normal;color:#003399;"><span style="position:absolute;top:85.655273px;left:617.702881px"><nobr><a href="tel:+000000000000" target="_blank">+91 </a><a href="tel:+000000000000" target="_blank">8520870730 </a></nobr></span></span></p><p><span style="font-family:Arial;font-size:17.215401px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:125.771568px;left:39.669628px"><nobr>Summary </nobr></span></span></p><div style="position:absolute;top:145.408279px;left:39.003242px"><nobr><img height="3.000000" width="716.000000" src ="bgimg/bg00001.jpg"/></nobr></div><p><span style="font-family:Arial;font-size:11.955200px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:160.163651px;left:39.669601px"><nobr>Computer Science student at Vellore Institute of Technology, Chennai. </nobr></span></span></p><p><span style="font-family:Arial;font-size:11.955200px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:189.059402px;left:39.669601px"><nobr>Seeking opportunities to develop practical knowledge and seeking exciting opportunities related to the </nobr></span><span style="position:absolute;top:208.321945px;left:39.669601px"><nobr>same. I am always curious about things and enjoy learning. I like to solve problems and fix errors. I </nobr></span><span style="position:absolute;top:227.585770px;left:39.669601px"><nobr>am a detailed oriented person and I keep my goals and tasks organized. I believe that the skills I have </nobr></span><span style="position:absolute;top:246.849609px;left:39.669601px"><nobr>attained from the dynamic environment and the competitive university life define me and I am looking </nobr></span><span style="position:absolute;top:266.113434px;left:39.669601px"><nobr>forward to implementing and polishing them in any opportunity that I receive. Aspiring to improve my </nobr></span><span style="position:absolute;top:285.377289px;left:39.669601px"><nobr>problem-solving skills. Skilled in C++, C and python. </nobr></span></span></p><p><span style="font-family:Arial;font-size:17.215401px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:327.153717px;left:39.669601px"><nobr>Work Experience </nobr></span></span></p><div style="position:absolute;top:346.790619px;left:39.003242px"><nobr><img height="3.000000" width="716.000000" src ="bgimg/bg00002.jpg"/></nobr></div><p><span style="font-family:Arial;font-size:11.955200px;font-weight:bold;color:#000000;"><span style="position:absolute;top:363.959717px;left:39.669601px"><nobr>Principal Secretary </nobr></span></span></p><p><span style="font-family:Arial;font-size:11.955200px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:363.959717px;left:628.123291px"><nobr>Jan 2021 - present </nobr></span></span></p><p><span style="font-family:Arial;font-size:11.955200px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:388.205566px;left:39.669586px"><nobr>Principal Secretary at Microsoft Innovations Club VIT CHENNAI </nobr></span></span></p><p><span style="font-family:Arial;font-size:11.955200px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:407.468109px;left:39.669586px"><nobr>Organised a 24 hours hackathon on environment , organised a ctf and many more workshops and gained </nobr></span><span style="position:absolute;top:426.731934px;left:39.669586px"><nobr>the experience of leadership </nobr></span></span></p><p><span style="font-family:Arial;font-size:11.955200px;font-weight:bold;color:#000000;"><span style="position:absolute;top:456.955933px;left:39.669586px"><nobr>Design Lead </nobr></span></span></p><p><span style="font-family:Arial;font-size:11.955200px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:456.955933px;left:622.709717px"><nobr>May 2021 - present </nobr></span></span></p><p><span style="font-family:Arial;font-size:11.955200px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:481.201782px;left:39.669586px"><nobr>Design Lead at NSS VIT CHENNAI and DAO COMMUNITY VIT CHENNAI </nobr></span><span style="position:absolute;top:500.465607px;left:39.669586px"><nobr>Specialised in graphic designing , poster designing and presentations </nobr></span></span></p><p><span style="font-family:Arial;font-size:17.215401px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:540.581787px;left:39.669586px"><nobr>Projects </nobr></span></span></p><div style="position:absolute;top:560.218506px;left:39.003242px"><nobr><img height="3.000000" width="716.000000" src ="bgimg/bg00003.jpg"/></nobr></div><p><span style="font-family:Arial;font-size:11.955200px;font-weight:bold;color:#000000;"><span style="position:absolute;top:577.386169px;left:39.669601px"><nobr>Smart E-business for small enterprise </nobr></span></span></p><p><span style="font-family:Arial;font-size:11.955200px;font-style:normal;font-weight:normal;color:#003399;"><span style="position:absolute;top:577.386169px;left:658.765076px"><nobr><a href="https://github.com/homealone07/Connect-mern/tree/master" target="_blank">Link </a><a href="https://github.com/homealone07/Connect-mern/tree/master" target="_blank">to </a><a href="https://github.com/homealone07/Connect-mern/tree/master" target="_blank">Demo </a></nobr></span></span></p><p><span style="font-family:Arial;font-size:11.955200px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:601.632080px;left:39.669586px"><nobr>A web application where all small enterprises and medium enterprises register and upload all the product . </nobr></span><span style="position:absolute;top:620.895935px;left:39.669586px"><nobr>details and make them available to the customers. Our project will also provide analysis and analytics </nobr></span><span style="position:absolute;top:640.159729px;left:39.669586px"><nobr>of the products and management of capital of the enterprise. </nobr></span></span></p><p><span style="font-family:Arial;font-size:11.955200px;font-weight:bold;color:#000000;"><span style="position:absolute;top:678.687439px;left:39.669586px"><nobr>Phishing website detection from website URLs </nobr></span></span></p><p><span style="font-family:Arial;font-size:11.955200px;font-style:normal;font-weight:normal;color:#003399;"><span style="position:absolute;top:678.687439px;left:658.765076px"><nobr><a href="https://github.com/Santhosh2231/Phishing-website-Detection" target="_blank">Link </a><a href="https://github.com/Santhosh2231/Phishing-website-Detection" target="_blank">to </a><a href="https://github.com/Santhosh2231/Phishing-website-Detection" target="_blank">Demo </a></nobr></span></span></p><p><span style="font-family:Arial;font-size:11.955200px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:702.931946px;left:39.669586px"><nobr>A website that will be used to detect whether a website is legitimate or phishing using Machine learning </nobr></span><span style="position:absolute;top:722.195801px;left:39.669586px"><nobr>algorithms.In our project, we applied algorithms like Logistic Regression, Naive Bayes, Support vector </nobr></span><span style="position:absolute;top:741.459656px;left:39.669586px"><nobr>Machine and Random Forest Classifier to the model that was developed. During testing, it was observed </nobr></span><span style="position:absolute;top:760.723450px;left:39.669586px"><nobr>that the system worked well and as expected.Our project aims to improve the detection method for </nobr></span><span style="position:absolute;top:779.987305px;left:39.669586px"><nobr>detecting phishing websites using machine learning technology </nobr></span></span></p><p><span style="font-family:Arial;font-size:17.215401px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:820.103394px;left:39.669586px"><nobr>Education </nobr></span></span></p><div style="position:absolute;top:839.739014px;left:39.003242px"><nobr><img height="3.000000" width="716.000000" src ="bgimg/bg00004.jpg"/></nobr></div><p><span style="font-family:Arial;font-size:11.955200px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:856.908081px;left:39.669601px"><nobr>2020 - present Bachelor’s Degree at Vellore Institute of Technology (GPA: 8.4/10) </nobr></span><span style="position:absolute;top:876.171997px;left:39.669628px"><nobr>2020 Class 12th State Board of Andhra Pradesh (Grades) </nobr></span></span></p><p><span style="font-family:Arial;font-size:11.955200px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:895.435791px;left:39.669628px"><nobr>2018 Class 10th CBSE </nobr></span></span></p><p><span style="font-family:Arial;font-size:11.955200px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:895.435791px;left:693.570862px"><nobr>(Grades) </nobr></span></span></p><p><span style="font-family:Arial;font-size:17.215401px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:935.551880px;left:39.669628px"><nobr>Skills </nobr></span></span></p><div style="position:absolute;top:955.188599px;left:39.003242px"><nobr><img height="3.000000" width="716.000000" src ="bgimg/bg00005.jpg"/></nobr></div><p><span style="font-family:Arial;font-size:11.955200px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:972.357849px;left:39.669601px"><nobr>C++ , Python , MATLAB , R-Studio , LaTeX These are some skills where i am Technically skillful </nobr></span><span style="position:absolute;top:991.620361px;left:39.669601px"><nobr>Graphic Designing , Leadership , Communication There are some of my skills that show case the cre-</nobr></span></span></p><p><span style="font-family:Arial;font-size:11.955200px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:1010.884216px;left:393.458771px"><nobr>ative and non-technical phase of myself </nobr></span></span></p><p><span style="font-family:Arial;font-size:9.962600px;font-style:normal;font-weight:normal;color:#000000;"><span style="position:absolute;top:1046.081909px;left:297.860474px"><nobr>Last updated: November 16, 2022 </nobr></span></span></p><div style="position:absolute;top:83.705322px;left:64.691338px"><nobr><img height="16.000000" width="16.000000" src ="bgimg/bg00006.jpg"/></nobr></div><div style="position:absolute;top:84.419189px;left:198.078812px"><nobr><img height="14.000000" width="14.000000" src ="bgimg/bg00007.jpg"/></nobr></div><div style="position:absolute;top:85.361244px;left:338.640259px"><nobr><img height="12.000000" width="16.000000" src ="bgimg/bg00008.jpg"/></nobr></div><div style="position:absolute;top:83.467201px;left:602.544556px"><nobr><img height="16.000000" width="10.000000" src ="bgimg/bg00009.jpg"/></nobr></div>']
+            }
+        },
+        mounted: function() {
+            this.$nextTick(function() {
+                this.pageNum = this.pageDatas.length;
+                this.pageContent = this.pageDatas[0];
+
+                this.setLeftMenuHeight();
+            })
+        },
+        watch: {
+            'currentPage': function(newVal, oldValue) {
+                // console.log('newVal ' + newVal, 'oldValue ' + oldValue);
+                if (newVal) {
+                    this.pageContent = this.pageDatas[this.currentPage - 1];
+                }
+            },
+            'zoomNum': function(newVal, oldValue) {
+                if (newVal) {
+                    this.zoomStyle = {
+                        'transform': 'scale(' + newVal + ')',
+                        '-webkit-transform': 'scale(' + newVal + ')',
+                        '-ms-transform': 'scale(' + newVal + ')',
+                        '-moz-transform': 'scale(' + newVal + ')',
+                        '-o-transform': 'scale(' + newVal + ')'
+                    }
+                }
+            }
+        },
+        methods: {
+            
+            changeCurrentPage: function(methods) {
+                switch (methods) {
+                    case 'first':
+                        this.currentPage = 1;
+                        break;
+                    case 'prev':
+                        if (this.currentPage > 1) {
+                            this.currentPage -= 1;
+                        }
+                        break;
+                    case 'next':
+                        if (this.currentPage < this.pageNum) {
+                            this.currentPage += 1;
+                        }
+                        break;
+                    case 'last':
+                        this.currentPage = this.pageNum;
+                        break;
+                }
+            },
+
+            gotoPage: function(page) {
+                console.log(page);
+                this.currentPage = page;
+            },
+            modifyZoom: function(type) {
+                switch (type) {
+                    case 'in':
+                        if (this.zoomNum < 2) {
+                            // this.zoomNum = (this.zoomNum + 0.1).toFixed(1);
+                            this.zoomNum = (parseFloat(this.zoomNum) + 0.1).toFixed(1);
+                        }
+                        break;
+                    case 'out':
+                        if (this.zoomNum > 0.5) {
+                            this.zoomNum = (parseFloat(this.zoomNum) - 0.1).toFixed(1);
+                        }
+                        break;
+                    default:
+                        break;
+                }
+                console.log(this.zoomNum);
+            },
+            setLeftMenuHeight: function() {
+                // this.asideHeight = document.body.scrollHeight - 60;
+                this.mainHeight = document.documentElement.clientHeight - 60 - 20;
+                // 60为头部导航高度， 46为menu高度， 40为上下padding
+                this.asideHeight = this.mainHeight - 20 - 46;
+            },
+            changePage: function(page) {
+                this.currentPage = page;
+                // this.pageContent = this.pageDatas[page - 1];
+            },
+            changeLeftMenu: function() {
+                this.ifMenuShow = !this.ifMenuShow;
+            }
+        }
+    });
+
+function gotoPage(page) {
+    console.log(page);
+    app.gotoPage(page);
+}
+
+</script>
+
+</html>
